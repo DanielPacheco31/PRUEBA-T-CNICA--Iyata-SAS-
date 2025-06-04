@@ -1,0 +1,194 @@
+// PRUEBA TÉCNICA DE DESARROLLADOR JUNIOR
+// Iyata SAS - Soluciones Felinas
+
+// ■ Problema 1: Las Casitas de los Gatos Numéricos
+/**
+ * @param {string} cadenaJuguetes La cadena de juguetes numéricos.
+ * @return {string[]} Un array con todas las direcciones IP gatunas posibles.
+ */
+var construirCasitas = function(cadenaJuguetes) {
+    const resultado = [];
+    const n = cadenaJuguetes.length;
+    
+    // Función auxiliar para validar si un segmento es válido
+    function esSegmentoValido(segmento) {
+        // No puede estar vacío
+        if (segmento.length === 0) return false;
+        
+        // No puede empezar con 0 a menos que sea exactamente "0"
+        if (segmento.length > 1 && segmento[0] === '0') return false;
+        
+        // Debe estar entre 0 y 255
+        const num = parseInt(segmento);
+        return num >= 0 && num <= 255;
+    }
+    
+    // Backtracking para generar todas las combinaciones posibles
+    function backtrack(inicio, partes, ipActual) {
+        // Si tenemos 4 partes y hemos usado toda la cadena
+        if (partes === 4 && inicio === n) {
+            resultado.push(ipActual.slice(0, -1)); // Remover el último punto
+            return;
+        }
+        
+        // Si ya tenemos 4 partes o no hay más caracteres, salir
+        if (partes === 4 || inicio >= n) return;
+        
+        // Probar segmentos de 1, 2 y 3 dígitos
+        for (let len = 1; len <= 3 && inicio + len <= n; len++) {
+            const segmento = cadenaJuguetes.substring(inicio, inicio + len);
+            
+            if (esSegmentoValido(segmento)) {
+                backtrack(inicio + len, partes + 1, ipActual + segmento + '.');
+            }
+        }
+    }
+    
+    backtrack(0, 0, '');
+    return resultado;
+};
+
+// ■ Problema 2: Secuencia de Siesta Felina
+/**
+ * @param {number[]} collares Un array con los números de collar de los gatos.
+ * @return {number} La longitud de la siesta consecutiva más larga.
+ */
+var longitudSiesta = function(collares) {
+    if (collares.length === 0) return 0;
+    
+    // Usar Set para eliminar duplicados y búsqueda O(1)
+    const conjuntoCollares = new Set(collares);
+    let maxLongitud = 0;
+    
+    for (const collar of conjuntoCollares) {
+        // Solo empezar a contar si es el inicio de una secuencia
+        // (no existe collar - 1 en el conjunto)
+        if (!conjuntoCollares.has(collar - 1)) {
+            let numActual = collar;
+            let longitudActual = 1;
+            
+            // Contar hacia adelante mientras existan números consecutivos
+            while (conjuntoCollares.has(numActual + 1)) {
+                numActual++;
+                longitudActual++;
+            }
+            
+            maxLongitud = Math.max(maxLongitud, longitudActual);
+        }
+    }
+    
+    return maxLongitud;
+};
+
+// ■ Problema 3: Descifrando el Maullido Secreto
+/**
+ * @param {string} maullido El maullido secreto.
+ * @param {string[]} diccionarioFelino El diccionario de palabras felinas.
+ * @return {string[]} Un array con todas las posibles frases felinas.
+ */
+var descifrarMaullido = function(maullido, diccionarioFelino) {
+    const resultado = [];
+    const conjuntoPalabras = new Set(diccionarioFelino);
+    
+    function backtrack(inicio, fraseActual) {
+        // Si hemos procesado toda la cadena
+        if (inicio === maullido.length) {
+            resultado.push(fraseActual.trim());
+            return;
+        }
+        
+        // Probar todas las posibles palabras que empiecen en la posición actual
+        for (let fin = inicio + 1; fin <= maullido.length; fin++) {
+            const palabra = maullido.substring(inicio, fin);
+            
+            if (conjuntoPalabras.has(palabra)) {
+                const separador = fraseActual.length > 0 ? ' ' : '';
+                backtrack(fin, fraseActual + separador + palabra);
+            }
+        }
+    }
+    
+    backtrack(0, '');
+    return resultado;
+};
+
+// ========================================
+// FUNCIONES DE PRUEBA
+// ========================================
+
+// Función para probar el Problema 1
+function probarCasitas() {
+    console.log("🏠 Probando Las Casitas de los Gatos Numéricos:");
+    
+    const casos = [
+        "25525511135",
+        "0000",
+        "101023"
+    ];
+    
+    casos.forEach((caso, i) => {
+        const resultado = construirCasitas(caso);
+        console.log(`Caso ${i + 1}: "${caso}" → [${resultado.join(', ')}]`);
+    });
+}
+
+// Función para probar el Problema 2
+function probarSiesta() {
+    console.log("\n😴 Probando Secuencia de Siesta Felina:");
+    
+    const casos = [
+        [100, 4, 200, 1, 3, 2],
+        [0, 3, 7, 2, 5, 8, 4, 6, 0, 1],
+        [1, 2, 0, 1]
+    ];
+    
+    casos.forEach((caso, i) => {
+        const resultado = longitudSiesta(caso);
+        console.log(`Caso ${i + 1}: [${caso.join(', ')}] → ${resultado}`);
+    });
+}
+
+// Función para probar el Problema 3
+function probarMaullido() {
+    console.log("\n🐱 Probando Descifrando el Maullido Secreto:");
+    
+    const casos = [
+        {
+            maullido: "catsanddog",
+            diccionario: ["cat", "cats", "and", "sand", "dog"]
+        },
+        {
+            maullido: "pineapplepenapple",
+            diccionario: ["apple", "pen", "applepen", "pine", "pineapple"]
+        }
+    ];
+    
+    casos.forEach((caso, i) => {
+        const resultado = descifrarMaullido(caso.maullido, caso.diccionario);
+        console.log(`Caso ${i + 1}: "${caso.maullido}"`);
+        console.log(`Diccionario: [${caso.diccionario.join(', ')}]`);
+        console.log(`Resultado: [${resultado.join(' | ')}]`);
+    });
+}
+
+// Ejecutar todas las pruebas
+function ejecutarTodasLasPruebas() {
+    console.log("🎯 INICIANDO PRUEBAS TÉCNICAS FELINAS\n");
+    probarCasitas();
+    probarSiesta();
+    probarMaullido();
+    console.log("\n✅ TODAS LAS PRUEBAS COMPLETADAS");
+}
+
+// Ejecutar las pruebas si estamos en Node.js
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        construirCasitas,
+        longitudSiesta,
+        descifrarMaullido,
+        ejecutarTodasLasPruebas
+    };
+} else {
+    // Si estamos en el navegador, ejecutar automáticamente
+    ejecutarTodasLasPruebas();
+}
